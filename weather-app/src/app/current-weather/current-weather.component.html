@@ -1,0 +1,41 @@
+<div>
+    <label for="city">Enter City Name:</label>
+    <input type="text" id="city" [(ngModel)]="cityName" placeholder="City">
+    <button (click)="getWeather()">Get Weather</button>
+
+    <label for="time">Select Time:</label>
+    <input type="time" id="time" name="time" [(ngModel)]="selectedTime" (change)="onTimeChange($event)">
+
+
+    <div *ngIf="currentWeather">
+        <h2>Current Weather</h2>
+        <p>City: {{ currentWeather.name }}</p>
+        <p>Temperature: {{ currentWeather.main.temp }}°C</p>
+        <p>Humidity: {{ currentWeather.main.humidity }}%</p>
+        <p>Wind Speed: {{ currentWeather.wind.speed }} m/s</p>
+    </div>
+
+    <!-- <div *ngIf="hourlyForecastData">
+        <h2>Hourly Forecast for Today</h2>
+        <ul>
+            <li *ngFor="let hourlyForecast of hourlyForecastData">
+                <p>Time: {{ hourlyForecast.time }}</p>
+                <p>Temperature: {{ hourlyForecast.temp }}°C</p>
+                <p>Description: {{ hourlyForecast.description }}</p>
+            </li>
+        </ul>
+    </div> -->
+
+    <div *ngIf="forecastData">
+        <h2>Forecast for the next 10 days</h2>
+        <div class="forecast-graph">
+            <div *ngFor="let forecast of forecastData" class="forecast-bar">
+                <img class="img" [src]="weatherIconBaseUrl + mapWeatherConditionToIcon(forecast.weather)"
+                    alt="Weather Icon">
+                <div class="date">{{ forecast.date | date:'shortDate' }}</div>
+                <div class="temperature-bar" [style.width.%]="(forecast.temp / maxTemp) * 100">
+                    {{ forecast.temp }}°C
+                </div>
+            </div>
+        </div>
+    </div>
