@@ -1,0 +1,16 @@
+# Ignore node_modules directory
+node_modules/
+
+# Ignore .env file
+.env
+
+# Ignore log files
+*.log
+
+# Ignore compiled JavaScript files
+*.js
+
+
+# Ignore cache files
+*.cache
+cache/

@@ -13,25 +13,15 @@
         <p>Temperature: {{ currentWeather.main.temp }}°C</p>
         <p>Humidity: {{ currentWeather.main.humidity }}%</p>
         <p>Wind Speed: {{ currentWeather.wind.speed }} m/s</p>
-    </div>
+        <p>Feels Like: {{ currentWeather.main.feels_like }} m/s</p>
 
-    <!-- <div *ngIf="hourlyForecastData">
-        <h2>Hourly Forecast for Today</h2>
-        <ul>
-            <li *ngFor="let hourlyForecast of hourlyForecastData">
-                <p>Time: {{ hourlyForecast.time }}</p>
-                <p>Temperature: {{ hourlyForecast.temp }}°C</p>
-                <p>Description: {{ hourlyForecast.description }}</p>
-            </li>
-        </ul>
-    </div> -->
+    </div>
 
     <div *ngIf="forecastData">
         <h2>Forecast for the next 10 days</h2>
         <div class="forecast-graph">
             <div *ngFor="let forecast of forecastData" class="forecast-bar">
-                <img class="img" [src]="weatherIconBaseUrl + mapWeatherConditionToIcon(forecast.weather)"
-                    alt="Weather Icon">
+                <img class="img" [src]="weatherIconBaseUrl + mapWeatherConditionToIcon(forecast)" alt="Weather Icon">
                 <div class="date">{{ forecast.date | date:'shortDate' }}</div>
                 <div class="temperature-bar" [style.width.%]="(forecast.temp / maxTemp) * 100">
                     {{ forecast.temp }}°C
@@ -39,3 +29,5 @@
             </div>
         </div>
     </div>
+    <div id="map" style="height: 500px;"></div>
+</div>

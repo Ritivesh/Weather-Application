@@ -3,6 +3,7 @@ import { WeatherService } from '../weather.service';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
+import { MapInitializeService } from '../map-initialize.service';
 
 @Component({
   selector: 'app-current-weather',
@@ -21,7 +22,7 @@ export class CurrentWeatherComponent implements OnInit {
   weatherIconBaseUrl: string = 'https://www.awxcdn.com/adc-assets/images/weathericons/';
   selectedTime: any;
 
-  constructor(private weatherService: WeatherService,private http:HttpClient) { }
+  constructor(private weatherService: WeatherService,private http:HttpClient,private mapInitializeService: MapInitializeService) { }
 
   ngOnInit(): void {
     this.getUserCity()
@@ -32,6 +33,9 @@ export class CurrentWeatherComponent implements OnInit {
     if (this.cityName) {
       this.weatherService.getCurrentWeather(this.cityName).subscribe(currentWeatherData => {
         this.currentWeather = currentWeatherData;
+        if (this.currentWeather?.coord) {
+          this.mapInitializeService.updateMarker(this.currentWeather.coord.lat, this.currentWeather.coord.lon);
+        }
       });
 
       this.weatherService.getForecast(this.cityName).subscribe(forecastData => {
@@ -51,14 +55,13 @@ export class CurrentWeatherComponent implements OnInit {
     this.http.get('https://ipapi.co/json/').subscribe((response: any) => {
       console.log('User City:', response.city);
       this.cityName = response.city
+      this.mapInitializeService.initializeMap('map', response.latitude, response.longitude);
       this.getWeather()
-      // You can use response.city to display the user's current city
-    });
+    })
   }
 
   onTimeChange(event: Event) {
     this.selectedTime = (event.target as HTMLInputElement).value;
-    // Implement logic to fetch weather data for the selected time
   }
 
   calculateMaxTemp() {
@@ -69,24 +72,21 @@ export class CurrentWeatherComponent implements OnInit {
   }
 
   calculatePointPosition(temperature: number): number {
-    // Assuming a temperature range of -10°C to 40°C for simplicity
     const minTemp = -10;
     const maxTemp = 40;
-    const graphWidth = 100; // Width of the graph in percentage
+    const graphWidth = 100; 
 
-    // Calculate the position of the point based on temperature range
     return ((temperature - minTemp) / (maxTemp - minTemp)) * graphWidth;
   }
 
-  mapWeatherConditionToIcon(condition: string): string {
-    switch (condition) {
-      case 'clear':
+  mapWeatherConditionToIcon(condition: any): string {
+    switch (condition.description) {
+      case 'clear sky':
         return '1.svg';
-      case 'cloudy':
+      case 'few clouds':
         return '2.svg';
-      case 'rainy':
+      case 'light rain':
         return '3.svg';
-      // Add more cases as needed
       default:
         return '1.svg';
     }
