@@ -1,33 +1,38 @@
-<div>
-    <label for="city">Enter City Name:</label>
-    <input type="text" id="city" [(ngModel)]="cityName" placeholder="City">
-    <button (click)="getWeather()">Get Weather</button>
+<div class="weather-app">
+    <h1 class="app-title">Weather Application</h1>
 
-    <label for="time">Select Time:</label>
-    <input type="time" id="time" name="time" [(ngModel)]="selectedTime" (change)="onTimeChange($event)">
+    <div class="input-section">
+        <label for="city">Enter City Name:</label>
+        <input type="text" id="city" [(ngModel)]="cityName" placeholder="City" class="input-field">
 
-
-    <div *ngIf="currentWeather">
-        <h2>Current Weather</h2>
-        <p>City: {{ currentWeather.name }}</p>
-        <p>Temperature: {{ currentWeather.main.temp }}°C</p>
-        <p>Humidity: {{ currentWeather.main.humidity }}%</p>
-        <p>Wind Speed: {{ currentWeather.wind.speed }} m/s</p>
-        <p>Feels Like: {{ currentWeather.main.feels_like }} m/s</p>
+        <label for="time">Select Time:</label>
+        <input type="time" id="time" name="time" [(ngModel)]="selectedTime" (change)="onTimeChange($event)" class="input-field">
+        <button (click)="getWeather()" class="btn-primary">Get Weather</button>
 
     </div>
 
-    <div *ngIf="forecastData">
+    <div *ngIf="currentWeather" class="weather-info">
+        <h2>Current Weather</h2>
+        <p><strong>City:</strong> {{ currentWeather.name }}</p>
+        <p><strong>Temperature:</strong> {{ currentWeather.main.temp }}°C</p>
+        <p><strong>Humidity:</strong> {{ currentWeather.main.humidity }}%</p>
+        <p><strong>Wind Speed:</strong> {{ currentWeather.wind.speed }} m/s</p>
+        <p><strong>Feels Like:</strong> {{ currentWeather.main.feels_like }}°C</p>
+    </div>
+
+    <div id="map" class="map"></div>
+
+    <div *ngIf="forecastData" class="forecast-section">
         <h2>Forecast for the next 10 days</h2>
         <div class="forecast-graph">
             <div *ngFor="let forecast of forecastData" class="forecast-bar">
-                <img class="img" [src]="weatherIconBaseUrl + mapWeatherConditionToIcon(forecast)" alt="Weather Icon">
-                <div class="date">{{ forecast.date | date:'shortDate' }}</div>
+                <img class="weather-icon" [src]="weatherIconBaseUrl + mapWeatherConditionToIcon(forecast)" alt="Weather Icon">
+                <div class="date">{{ forecast.date | date:'MMM d' }}</div>
                 <div class="temperature-bar" [style.width.%]="(forecast.temp / maxTemp) * 100">
                     {{ forecast.temp }}°C
                 </div>
             </div>
         </div>
     </div>
-    <div id="map" style="height: 500px;"></div>
+
 </div>
