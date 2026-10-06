@@ -47,7 +47,8 @@ export class MapInitializeService {
   }
 
   private async create(container: HTMLElement, center: [number, number]): Promise<void> {
-    const maplibregl = await import('maplibre-gl');
+    const maplibreModule = await import('maplibre-gl');
+    const maplibregl: typeof import('maplibre-gl') = (maplibreModule as any).default || maplibreModule;
 
     const styleSpec: StyleSpecification = {
       version: 8,
