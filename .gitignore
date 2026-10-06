@@ -1,0 +1,16 @@
+# Dependencies
+node_modules/
+
+# OS / Editor junk
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Build and deployment outputs
+dist/
+weather-app/dist/
+.firebase/
+
+# Patch files
+*.patch
