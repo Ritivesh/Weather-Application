@@ -1,38 +1,124 @@
-<div class="weather-app">
-    <h1 class="app-title">Weather Application</h1>
-
-    <div class="input-section">
-        <label for="city">Enter City Name:</label>
-        <input type="text" id="city" [(ngModel)]="cityName" placeholder="City" class="input-field">
-
-        <label for="time">Select Time:</label>
-        <input type="time" id="time" name="time" [(ngModel)]="selectedTime" (change)="onTimeChange($event)" class="input-field">
-        <button (click)="getWeather()" class="btn-primary">Get Weather</button>
-
-    </div>
-
-    <div *ngIf="currentWeather" class="weather-info">
-        <h2>Current Weather</h2>
-        <p><strong>City:</strong> {{ currentWeather.name }}</p>
-        <p><strong>Temperature:</strong> {{ currentWeather.main.temp }}°C</p>
-        <p><strong>Humidity:</strong> {{ currentWeather.main.humidity }}%</p>
-        <p><strong>Wind Speed:</strong> {{ currentWeather.wind.speed }} m/s</p>
-        <p><strong>Feels Like:</strong> {{ currentWeather.main.feels_like }}°C</p>
-    </div>
-
-    <div id="map" class="map"></div>
-
-    <div *ngIf="forecastData" class="forecast-section">
-        <h2>Forecast for the next 10 days</h2>
-        <div class="forecast-graph">
-            <div *ngFor="let forecast of forecastData" class="forecast-bar">
-                <img class="weather-icon" [src]="weatherIconBaseUrl + mapWeatherConditionToIcon(forecast)" alt="Weather Icon">
-                <div class="date">{{ forecast.date | date:'MMM d' }}</div>
-                <div class="temperature-bar" [style.width.%]="(forecast.temp / maxTemp) * 100">
-                    {{ forecast.temp }}°C
-                </div>
-            </div>
+<div class="app" [attr.data-theme]="theme()">
+    <header class="topbar">
+        <div class="brand">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18a5 5 0 1 1 .9-9.9A6 6 0 0 1 19 10a4 4 0 0 1-1 8H7z"/></svg>
+            <span>Skycast</span>
         </div>
-    </div>
 
+        <form class="search" role="search" (ngSubmit)="search()">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input name="city" [(ngModel)]="query" placeholder="Search for a city" aria-label="City name" autocomplete="off">
+            <button type="button" class="icon-btn" (click)="useMyLocation()" title="Use my location" aria-label="Use my location">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+            </button>
+        </form>
+
+        <div class="units" role="group" aria-label="Temperature units">
+            <button type="button" [class.active]="units() === 'metric'" [attr.aria-pressed]="units() === 'metric'" (click)="setUnits('metric')">°C</button>
+            <button type="button" [class.active]="units() === 'imperial'" [attr.aria-pressed]="units() === 'imperial'" (click)="setUnits('imperial')">°F</button>
+        </div>
+    </header>
+
+    @if (error()) {
+        <div class="banner" role="alert">
+            <span>{{ error() }}</span>
+            <button type="button" class="icon-btn" (click)="error.set(null)" aria-label="Dismiss">✕</button>
+        </div>
+    }
+
+    <main class="layout" [class.refreshing]="loading() && current()" [attr.aria-busy]="loading()">
+        @if (current(); as w) {
+            <section class="card hero">
+                <div>
+                    <h1>{{ w.name }}<span class="country">{{ w.sys.country }}</span></h1>
+                    <p class="muted">{{ w.dt * 1000 | date: 'EEEE, h:mm a' : timezone() }}</p>
+                </div>
+                <div class="now">
+                    <img [src]="iconUrl(w.weather[0].icon, 4)" [alt]="w.weather[0].description" width="120" height="120">
+                    <span class="big-temp">{{ temp(w.main.temp) }}°</span>
+                </div>
+                <p class="desc">{{ w.weather[0].description }}</p>
+                <p class="muted">
+                    H {{ temp(w.main.temp_max) }}° · L {{ temp(w.main.temp_min) }}° · Feels like {{ temp(w.main.feels_like) }}°
+                </p>
+            </section>
+
+            <section class="card stats" aria-label="Current conditions">
+                <div class="stat">
+                    <span class="label">Humidity</span>
+                    <span class="value">{{ w.main.humidity }}%</span>
+                    <div class="meter"><div [style.width.%]="w.main.humidity"></div></div>
+                </div>
+                <div class="stat">
+                    <span class="label">Wind</span>
+                    <span class="value">{{ wind(w.wind.speed) }}</span>
+                    <span class="sub">
+                        <span class="arrow" [style.transform]="'rotate(' + (w.wind.deg + 180) + 'deg)'" aria-hidden="true">↑</span>
+                        {{ compass(w.wind.deg) }}
+                    </span>
+                </div>
+                <div class="stat">
+                    <span class="label">Cloud cover</span>
+                    <span class="value">{{ w.clouds.all }}%</span>
+                    <div class="meter"><div [style.width.%]="w.clouds.all"></div></div>
+                </div>
+                <div class="stat">
+                    <span class="label">Visibility</span>
+                    <span class="value">{{ visibility(w.visibility) }}</span>
+                </div>
+                <div class="stat">
+                    <span class="label">Pressure</span>
+                    <span class="value">{{ w.main.pressure }} hPa</span>
+                </div>
+                <div class="stat">
+                    <span class="label">Sunrise / Sunset</span>
+                    <span class="value">{{ w.sys.sunrise * 1000 | date: 'h:mm a' : timezone() }}</span>
+                    <span class="sub">{{ w.sys.sunset * 1000 | date: 'h:mm a' : timezone() }}</span>
+                </div>
+            </section>
+        } @else if (loading()) {
+            <section class="card hero skeleton" aria-label="Loading"></section>
+            <section class="card stats skeleton"></section>
+        }
+
+        @if (forecast(); as f) {
+            <section class="card hourly">
+                <h2>Next 24 hours</h2>
+                <ol class="hour-strip">
+                    @for (hour of f.hourly; track hour.dt; let first = $first) {
+                        <li>
+                            <span class="muted">{{ first ? 'Now' : (hour.dt * 1000 | date: 'h a' : timezone()) }}</span>
+                            <img [src]="iconUrl(hour.icon)" [alt]="hour.description" [title]="hour.description" width="48" height="48">
+                            <strong>{{ temp(hour.temp) }}°</strong>
+                            <span class="pop" [class.hidden]="hour.pop < 0.1">{{ hour.pop * 100 | number: '1.0-0' }}%</span>
+                        </li>
+                    }
+                </ol>
+            </section>
+
+            <section class="card daily">
+                <h2>{{ f.daily.length }}-day forecast</h2>
+                <ul>
+                    @for (day of f.daily; track day.dt; let first = $first) {
+                        <li>
+                            <span class="day">{{ first ? 'Today' : (day.dt * 1000 | date: 'EEE' : timezone()) }}</span>
+                            <img [src]="iconUrl(day.icon)" [alt]="day.description" [title]="day.description" width="40" height="40">
+                            <span class="pop" [class.hidden]="day.pop < 0.1">{{ day.pop * 100 | number: '1.0-0' }}%</span>
+                            <span class="muted lo">{{ temp(day.min) }}°</span>
+                            <div class="range"><div [style]="rangeStyle(day.min, day.max)"></div></div>
+                            <span class="hi">{{ temp(day.max) }}°</span>
+                        </li>
+                    }
+                </ul>
+            </section>
+        } @else if (loading()) {
+            <section class="card daily skeleton"></section>
+        }
+
+        <section class="card map-card" [class.pending]="!current()">
+            <div #map class="map" aria-label="Map of the selected location"></div>
+        </section>
+    </main>
+
+    <footer class="muted">Weather data by OpenWeather · Map © CARTO, OpenStreetMap</footer>
 </div>

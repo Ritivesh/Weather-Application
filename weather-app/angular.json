@@ -25,9 +25,11 @@
               "src/assets"
             ],
             "styles": [
+              "node_modules/maplibre-gl/dist/maplibre-gl.css",
               "src/styles.css"
             ],
-            "scripts": []
+            "scripts": [],
+            "allowedCommonJsDependencies": ["maplibre-gl"]
           },
           "configurations": {
             "production": {
@@ -39,8 +41,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "2kb",
-                  "maximumError": "4kb"
+                  "maximumWarning": "8kb",
+                  "maximumError": "12kb"
                 }
               ],
               "outputHashing": "all"
@@ -84,6 +86,7 @@
               "src/assets"
             ],
             "styles": [
+              "node_modules/maplibre-gl/dist/maplibre-gl.css",
               "src/styles.css"
             ],
             "scripts": []

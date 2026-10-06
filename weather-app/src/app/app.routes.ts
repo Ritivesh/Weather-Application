@@ -5,6 +5,6 @@ export const routes: Routes = [
     {
         path:"",
         component:CurrentWeatherComponent,
-        title:"Weather-Forecast"
+        title:"Skycast — Weather"
     }
 ];

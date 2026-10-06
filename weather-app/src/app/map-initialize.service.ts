@@ -1,35 +1,46 @@
 import { Injectable } from '@angular/core';
-import * as maplibregl from 'maplibre-gl';
+import type { Map, Marker } from 'maplibre-gl';
 
 @Injectable({
   providedIn: 'root',
 })
 export class MapInitializeService {
 
-  map: maplibregl.Map | any;
-  marker: maplibregl.Marker | any;
+  private map?: Map;
+  private marker?: Marker;
+  private ready?: Promise<void>;
 
-  constructor() {}
+  // Creates the map on first use, then flies to each new location.
+  // maplibre-gl is ~800 kB, so it is loaded lazily to keep the initial bundle small.
+  async show(container: HTMLElement, lat: number, lng: number): Promise<void> {
+    const center: [number, number] = [lng, lat];
 
-  initializeMap(container: string, lat: number, lng: number): void {
-    this.map = new maplibregl.Map({
-      container: container,
-      style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json', // A free map style
-      center: [lng, lat],
-      zoom: 12,
-    });
-    this.map.addControl(new maplibregl.NavigationControl());
+    if (!this.ready) {
+      this.ready = this.create(container, center);
+      return this.ready;
+    }
 
-    this.marker = new maplibregl.Marker()
-      .setLngLat([lng, lat])
-      .addTo(this.map);
+    await this.ready;
+    this.marker?.setLngLat(center);
+    this.map?.flyTo({ center, zoom: 9, essential: true });
   }
 
-  updateMarker(lat: number, lng: number): void {
-    this.marker.setLngLat([lng, lat]);
-    this.map.flyTo({
-      center: [lng, lat],
-      essential: true,
+  destroy(): void {
+    this.map?.remove();
+    this.map = undefined;
+    this.marker = undefined;
+    this.ready = undefined;
+  }
+
+  private async create(container: HTMLElement, center: [number, number]): Promise<void> {
+    const maplibregl = await import('maplibre-gl');
+    this.map = new maplibregl.Map({
+      container,
+      style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json', // A free map style
+      center,
+      zoom: 9,
     });
+    this.map.addControl(new maplibregl.NavigationControl({ showCompass: false }));
+    this.marker = new maplibregl.Marker({ color: '#ffb547' }).setLngLat(center).addTo(this.map);
   }
 }
