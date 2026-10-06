@@ -116,7 +116,16 @@
         }
 
         <section class="card map-card" [class.pending]="!current()">
-            <div #map class="map" aria-label="Map of the selected location"></div>
+            <div class="map-bar">
+                <h3>Weather Radar & Map</h3>
+                <div class="map-controls" role="group" aria-label="Map overlay layer">
+                    <button type="button" [class.active]="activeMapLayer() === 'precipitation_new'" (click)="setMapLayer('precipitation_new')">Radar</button>
+                    <button type="button" [class.active]="activeMapLayer() === 'clouds_new'" (click)="setMapLayer('clouds_new')">Clouds</button>
+                    <button type="button" [class.active]="activeMapLayer() === 'temp_new'" (click)="setMapLayer('temp_new')">Temp</button>
+                    <button type="button" [class.active]="activeMapLayer() === 'none'" (click)="setMapLayer('none')">Basemap</button>
+                </div>
+            </div>
+            <div #map class="map" aria-label="Interactive weather map"></div>
         </section>
     </main>
 

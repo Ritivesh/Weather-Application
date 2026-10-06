@@ -257,9 +257,59 @@
 }
 
 /* Map */
-.map-card { grid-area: map; padding: 0; overflow: hidden; transition: opacity 0.3s; }
+.map-card { grid-area: map; padding: 0; overflow: hidden; transition: opacity 0.3s; display: flex; flex-direction: column; }
 .map-card.pending { opacity: 0; }
-.map { height: 320px; }
+
+.map-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--glass-border);
+  flex-wrap: wrap;
+}
+
+.map-bar h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.map-controls {
+  display: flex;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 3px;
+  border-radius: 999px;
+  border: 1px solid var(--glass-border);
+}
+
+.map-controls button {
+  padding: 4px 10px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.map-controls button:hover {
+  color: #fff;
+}
+
+.map-controls button.active {
+  background: rgba(255, 255, 255, 0.25);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.map { height: 340px; width: 100%; }
 
 /* Loading placeholders */
 .skeleton {

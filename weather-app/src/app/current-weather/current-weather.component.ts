@@ -4,7 +4,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { Subscription, forkJoin } from 'rxjs';
 import { WeatherService } from '../weather.service';
-import { MapInitializeService } from '../map-initialize.service';
+import { MapInitializeService, WeatherLayer } from '../map-initialize.service';
 import { CurrentWeather, Forecast, WeatherLocation } from '../weather.models';
 
 type Units = 'metric' | 'imperial';
@@ -30,6 +30,7 @@ export class CurrentWeatherComponent implements OnInit, OnDestroy {
   loading = signal(false);
   error = signal<string | null>(null);
   units = signal<Units>(readStorage(UNITS_KEY) === 'imperial' ? 'imperial' : 'metric');
+  activeMapLayer = signal<WeatherLayer>('precipitation_new');
 
   // City-local UTC offset (e.g. "+0530") so times show in the searched city's timezone.
   timezone = computed(() => {
@@ -100,6 +101,11 @@ export class CurrentWeatherComponent implements OnInit, OnDestroy {
   setUnits(units: Units): void {
     this.units.set(units);
     writeStorage(UNITS_KEY, units);
+  }
+
+  setMapLayer(layer: WeatherLayer): void {
+    this.activeMapLayer.set(layer);
+    this.mapInitializeService.setLayer(layer);
   }
 
   temp(celsius: number): number {
