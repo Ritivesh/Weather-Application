@@ -12,7 +12,7 @@ export class MapInitializeService {
   private map?: Map;
   private marker?: Marker;
   private ready?: Promise<void>;
-  private activeLayer: WeatherLayer = 'precipitation_new';
+  private activeLayer: WeatherLayer = 'none';
 
   async show(container: HTMLElement, lat: number, lng: number): Promise<void> {
     const center: [number, number] = [lng, lat];

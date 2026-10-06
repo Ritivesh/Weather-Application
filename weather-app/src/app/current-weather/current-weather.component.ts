@@ -30,7 +30,7 @@ export class CurrentWeatherComponent implements OnInit, OnDestroy {
   loading = signal(false);
   error = signal<string | null>(null);
   units = signal<Units>(readStorage(UNITS_KEY) === 'imperial' ? 'imperial' : 'metric');
-  activeMapLayer = signal<WeatherLayer>('precipitation_new');
+  activeMapLayer = signal<WeatherLayer>('none');
 
   // City-local UTC offset (e.g. "+0530") so times show in the searched city's timezone.
   timezone = computed(() => {
@@ -65,8 +65,16 @@ export class CurrentWeatherComponent implements OnInit, OnDestroy {
       return;
     }
     this.loading.set(true);
-    this.http.get<{ city?: string }>('https://ipapi.co/json/').subscribe({
-      next: response => this.load({ city: response.city || DEFAULT_CITY }),
+    this.http.get<{ city?: string; latitude?: string; longitude?: string }>('https://get.geojs.io/v1/ip/geo.json').subscribe({
+      next: response => {
+        if (response.city) {
+          this.load({ city: response.city });
+        } else if (response.latitude && response.longitude) {
+          this.load({ lat: parseFloat(response.latitude), lon: parseFloat(response.longitude) });
+        } else {
+          this.load({ city: DEFAULT_CITY });
+        }
+      },
       error: () => this.load({ city: DEFAULT_CITY }),
     });
   }
