@@ -30,7 +30,7 @@ export class CurrentWeatherComponent implements OnInit, OnDestroy {
   loading = signal(false);
   error = signal<string | null>(null);
   units = signal<Units>(readStorage(UNITS_KEY) === 'imperial' ? 'imperial' : 'metric');
-  activeMapLayer = signal<WeatherLayer>('none');
+  activeMapLayer = signal<WeatherLayer>('precipitation_new');
 
   // City-local UTC offset (e.g. "+0530") so times show in the searched city's timezone.
   timezone = computed(() => {

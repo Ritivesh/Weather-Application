@@ -12,7 +12,7 @@ export class MapInitializeService {
   private map?: Map;
   private marker?: Marker;
   private ready?: Promise<void>;
-  private activeLayer: WeatherLayer = 'none';
+  private activeLayer: WeatherLayer = 'precipitation_new';
 
   async show(container: HTMLElement, lat: number, lng: number): Promise<void> {
     const center: [number, number] = [lng, lat];
@@ -34,8 +34,12 @@ export class MapInitializeService {
 
   setLayer(layer: WeatherLayer): void {
     this.activeLayer = layer;
-    if (this.map) {
+    if (!this.map) return;
+
+    if (this.map.isStyleLoaded()) {
       this.applyWeatherLayer(layer);
+    } else {
+      this.map.once('load', () => this.applyWeatherLayer(layer));
     }
   }
 
@@ -61,12 +65,26 @@ export class MapInitializeService {
           tileSize: 256,
           attribution: '&copy; Esri, HERE, Garmin, FAO, NOAA, USGS, OpenStreetMap contributors',
         },
+        'esri-labels': {
+          type: 'raster',
+          tiles: [
+            'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
+          ],
+          tileSize: 256,
+        },
       },
       layers: [
         {
           id: 'esri-dark-layer',
           type: 'raster',
           source: 'esri-dark',
+          minzoom: 0,
+          maxzoom: 19,
+        },
+        {
+          id: 'esri-labels-layer',
+          type: 'raster',
+          source: 'esri-labels',
           minzoom: 0,
           maxzoom: 19,
         },
@@ -95,28 +113,42 @@ export class MapInitializeService {
     const layerId = 'weather-layer';
     const sourceId = 'weather-source';
 
-    if (this.map.getLayer(layerId)) {
-      this.map.removeLayer(layerId);
-    }
-    if (this.map.getSource(sourceId)) {
-      this.map.removeSource(sourceId);
+    try {
+      if (this.map.getLayer(layerId)) {
+        this.map.removeLayer(layerId);
+      }
+      if (this.map.getSource(sourceId)) {
+        this.map.removeSource(sourceId);
+      }
+    } catch {
+      // Ignore cleanup error if style is updating
     }
 
     if (layer === 'none') return;
 
-    this.map.addSource(sourceId, {
-      type: 'raster',
-      tiles: [`https://tile.openweathermap.org/map/${layer}/{z}/{x}/{y}.png?appid=${API_KEY}`],
-      tileSize: 256,
-    });
+    try {
+      this.map.addSource(sourceId, {
+        type: 'raster',
+        tiles: [`https://tile.openweathermap.org/map/${layer}/{z}/{x}/{y}.png?appid=${API_KEY}`],
+        tileSize: 256,
+      });
 
-    this.map.addLayer({
-      id: layerId,
-      type: 'raster',
-      source: sourceId,
-      paint: {
-        'raster-opacity': 0.7,
-      },
-    });
+      // Insert weather layer BEFORE esri-labels-layer so city labels remain on top
+      const beforeId = this.map.getLayer('esri-labels-layer') ? 'esri-labels-layer' : undefined;
+
+      this.map.addLayer(
+        {
+          id: layerId,
+          type: 'raster',
+          source: sourceId,
+          paint: {
+            'raster-opacity': 0.75,
+          },
+        },
+        beforeId,
+      );
+    } catch (e) {
+      console.warn('Failed to add weather layer:', e);
+    }
   }
 }
