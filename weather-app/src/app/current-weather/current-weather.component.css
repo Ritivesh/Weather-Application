@@ -321,6 +321,8 @@
 @keyframes shimmer { to { background-position: -150% 0; } }
 
 footer { max-width: 1100px; margin: 24px auto 0; font-size: 12px; text-align: center; }
+.footer-credit p { margin: 4px 0; }
+.dev-credit { font-weight: 600; color: rgba(255, 255, 255, 0.9); font-size: 13px; letter-spacing: 0.3px; }
 
 @media (prefers-reduced-motion: reduce) {
   .app, .layout, .map-card { transition: none; }
